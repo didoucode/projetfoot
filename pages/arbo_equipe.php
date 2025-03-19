@@ -8,7 +8,10 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 }
 
 $equipe_id = intval($_GET['id']);
-
+$query_stats = "SELECT * FROM stats_equipe WHERE equipe_id = :equipe_id ORDER BY saison DESC LIMIT 1"; // Récupère les données les plus récentes
+$stmt = $pdo->prepare($query_stats);
+$stmt->execute(['equipe_id' => $equipe_id]);
+$stats = $stmt->fetch(PDO::FETCH_ASSOC);
 // Récupérer les informations de l'équipe
 $stmt_equipe = $pdo->prepare("SELECT * FROM equipe WHERE id = ?");
 $stmt_equipe->execute([$equipe_id]);
@@ -166,6 +169,7 @@ $trophee_images = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $equipe['nom']; ?> - Profil</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />    <style>
         :root {
@@ -218,6 +222,31 @@ $trophee_images = [
             right: 1rem;
             height: 2px;
             background-color: var(--accent-color);
+        }
+.chart-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.stats {
+    display: flex;               /* Utilisation de flexbox pour le centrage */
+    justify-content: center;     /* Centre horizontalement */
+    align-items: center;         /* Centre verticalement */
+    height: 400px;               /* Donne une hauteur au conteneur pour l'alignement vertical */
+    margin-top: 30px;
+    border: #000 solid 2px;          /* Donne un espace au-dessus du graphique */
+}
+
+canvas {
+    max-width: 90%;              /* Limite la largeur du graphique à 90% de l'écran */
+    height: auto;                /* Maintient l'aspect ratio du graphique */
+}
+
+#statsRadarChart {
+            width: 80%;
+            height: 400px;
+            margin: auto;
         }
 
         .next-match {
@@ -915,6 +944,8 @@ ul {
         </ul>
     </div>
 
+
+
     <!-- Section des informations de l'équipe -->
     <div class="team-info-section">
         <h4>Informations de l'Équipe <i class="fa-solid fa-circle-info" style="color: #FFD43B;"></i></h4>
@@ -930,8 +961,11 @@ ul {
             <p>Aucune information disponible pour cette équipe.</p>
         <?php endif; ?>
     </div>
-</div>
 
+</div>
+<div class="stats">
+        <canvas id="statsRadarChart"></canvas> <!-- C'est ici que le graphique sera dessiné -->
+    </div>
 
 
 
@@ -975,4 +1009,58 @@ ul {
     showMatches();
 });
 
+// Assurez-vous que les données sont récupérées en PHP et envoyées dans le script JS
+const statsData = {
+    buts_marques: <?php echo $stats['buts_marques']; ?>,
+    defense: <?php echo $stats['defense']; ?>,
+    possession: <?php echo $stats['possession']; ?>,
+    passes_precises: <?php echo $stats['passes_precises']; ?>,
+    tirs_cadres: <?php echo $stats['tirs_cadres']; ?>,
+    duels_aeriens: <?php echo $stats['duels_aeriens']; ?>,
+    occasions_creees: <?php echo $stats['occasions_creees']; ?>,
+    recuperations: <?php echo $stats['recuperations']; ?>,
+    contre_attaques: <?php echo $stats['contre_attaques']; ?>,
+    jeu_transition: <?php echo $stats['jeu_transition']; ?>,
+};
+
+// Le nom des différents axes du graphique
+const labels = [
+    'Buts Marqués',
+    'Défense',
+    'Possession',
+    'Passes Précises',
+    'Tirs Cadres',
+    'Duels Aériens',
+    'Occasions Créées',
+    'Récupérations',
+    'Contre-Attaques',
+    'Jeu de Transition'
+];
+
+// Créer le graphique en toile d'araignée (Radar Chart)
+const ctx = document.getElementById('statsRadarChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Statistiques de l\'Équipe',
+            data: Object.values(statsData),
+            fill: true,
+            backgroundColor: 'rgba(0, 123, 255, 0.2)', // Couleur d'arrière-plan du polygone
+            borderColor: 'rgba(0, 123, 255, 1)', // Couleur de la bordure
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scale: {
+            ticks: {
+                beginAtZero: true,
+                max: 100, // Ou ajuster selon les valeurs maximales attendues
+                stepSize: 10
+            }
+        },
+        responsive: true
+    }
+});
 </script>
