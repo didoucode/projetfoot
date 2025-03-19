@@ -4,8 +4,8 @@
   session_start();
   include "../config/db.php";
 
-  
-    
+
+
     // Récupérer toutes les équipes
     $stmt_equipes = $pdo->query("SELECT id, nom FROM equipe ORDER BY id");
 
@@ -42,7 +42,7 @@
             width: 60px;
             padding-top: 20px;
         }
-     
+
         .sidebar a {
             display: block;
             text-align: center;
@@ -50,7 +50,7 @@
             color: white;
             text-decoration: none;
         }
-        
+
           /* Contenu principal */
           .content {
             margin-left: 100px;
@@ -141,7 +141,7 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        
+
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container">
@@ -181,64 +181,37 @@
 
         <!-- Équipes et Joueurs -->
         <div class="container py-4">
-            <div class="row">
-                <div class="col-md-12">
-                    <?php
-                    while ($row_equipe = $stmt_equipes->fetch()) {
-                        $equipe_id = $row_equipe['id'];
-                        $equipe_nom = $row_equipe['nom'];
-                    ?>
-                    <div class="team-container">
-                        <div class="team-header" onclick="toggleTeam(<?php echo $equipe_id; ?>)">
-                            <div class="d-flex align-items-center">
-                                <img src="logo/<?php echo $equipe_id; ?>.jpg" alt="<?php echo $equipe_nom; ?>" class="team-logo">
-                                <h4 class="mb-0"><?php echo $equipe_nom; ?></h4>
-                            </div>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <ul class="list-unstyled team-players" id="team-<?php echo $equipe_id; ?>">
-                            <?php
-                            // Récupérer les joueurs de cette équipe avec PDO
-                            $stmt_joueurs = $pdo->prepare("SELECT id, nom, prenom, role FROM joueurs WHERE clubs = ? ORDER BY role, nom");
-                            $stmt_joueurs->execute([$equipe_nom]);
-                            
-                            if ($stmt_joueurs->rowCount() > 0) {
-                                while ($row_joueur = $stmt_joueurs->fetch()) {
-                                    $joueur_id = $row_joueur['id'];
-                                    $joueur_nom = $row_joueur['nom'];
-                                    $joueur_prenom = $row_joueur['prenom'];
-                                    $joueur_role = $row_joueur['role'];
-                            ?>
-                            <li class="player-item">
-                                <a href="joueur.php?id=<?php echo $joueur_id; ?>">
-                                    <?php echo $joueur_prenom . ' ' . $joueur_nom; ?>
-                                </a>
-                                <p class="player-role"><?php echo $joueur_role; ?></p>
-                            </li>
-                            <?php
-                                }
-                            } else {
-                                echo '<li class="player-item">Aucun joueur enregistré</li>';
-                            }
-                            ?>
-                        </ul>
-                    </div>
-                    <?php
-                    }
-                    
-                    // Si aucune équipe n'est trouvée
-                    if ($stmt_equipes->rowCount() == 0) {
-                        echo "<p>Aucune équipe trouvée</p>";
-                    }
-                    ?>
+    <div class="row">
+        <div class="col-md-12">
+            <?php
+            while ($row_equipe = $stmt_equipes->fetch()) {
+                $equipe_id = $row_equipe['id'];
+                $equipe_nom = $row_equipe['nom'];
+            ?>
+            <div class="team-container">
+                <div class="team-header">
+                    <a href="arbo_equipe.php?id=<?php echo $equipe_id; ?>" class="d-flex align-items-center text-decoration-none">
+                        <img src="logo/<?php echo $equipe_id; ?>.jpg" alt="<?php echo $equipe_nom; ?>" class="team-logo">
+                        <h4 class="mb-0 ml-2"><?php echo $equipe_nom; ?></h4>
+                    </a>
                 </div>
             </div>
+            <?php
+            }
+
+            // Si aucune équipe n'est trouvée
+            if ($stmt_equipes->rowCount() == 0) {
+                echo "<p>Aucune équipe trouvée</p>";
+            }
+            ?>
         </div>
     </div>
+</div>
+
 
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+    <!-- <script>
         function toggleTeam(teamId) {
             const teamPlayers = document.getElementById('team-' + teamId);
             if (teamPlayers.style.display === 'block') {
@@ -246,7 +219,7 @@
             } else {
                 teamPlayers.style.display = 'block';
             }
-        }
+        } -->
     </script>
 </body>
 </html>
