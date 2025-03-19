@@ -3,7 +3,7 @@ session_start();
 include "../config/db.php"; // Connexion à la base de données
 
 if (isset($_SESSION['user_id'])) {
-    header("Location: ../index.php"); // Redirige si déjà connecté
+    header("Location: ../pages/home.php"); // Redirige si déjà connecté
     exit();
 }
 
