@@ -1,285 +1,299 @@
 <?php
-include "../config/db.php";
 
-if (isset($_POST['query'])) {
-    $search = "%" . $_POST['query'] . "%"; // Ajout des wildcards pour la recherche partielle
+  session_start();
+  include "../config/db.php";
 
-    $stmt = $pdo->prepare("
-        SELECT m.*, e1.nom AS equipe1, e2.nom AS equipe2 
-        FROM matchs m
-        JOIN equipe e1 ON m.equipe1_id = e1.id
-        JOIN equipe e2 ON m.equipe2_id = e2.id
-        WHERE CONCAT(e1.nom, ' vs ', e2.nom) LIKE ?
-        OR CONCAT(e2.nom, ' vs ', e1.nom) LIKE ?");
 
-    $stmt->execute([$search, $search]);
-    $matchs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    if (count($matchs) > 0) {
-        foreach ($matchs as $match) {
-            echo "
-            <div class='match-card p-3 mt-2'>
-                <h4>{$match['equipe1']} vs {$match['equipe2']}</h4>
-                <p><strong>Score :</strong> {$match['score_equipe1']} - {$match['score_equipe2']}</p>
-            </div>";
-        }
-    } else {
-        echo "<p class='text-muted'>Aucun match trouvé.</p>";
-    }
+// Vérifier si l'utilisateur est connecté
+if (!isset($_SESSION['user_id'])) {
+    // Rediriger vers la page de connexion si non authentifié
+    header("Location: auth.php");
+    exit();
 }
-?>
 
+// Récupérer les informations de l'utilisateur connecté
+$user_id = $_SESSION['user_id'];
+$query = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+$query->execute([$user_id]);
+$user = $query->fetch(PDO::FETCH_ASSOC);
 
+// Vérifier si on a bien récupéré l'utilisateur
+if (!$user) {
+    // Détruire la session et rediriger en cas de problème
+    session_destroy();
+    header("Location: auth.php");
+    exit();
+}
+
+$nom_utilisateur = htmlspecialchars($user['username']); // Protection contre les injections XSS
+
+  ?>
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard  - Espace Utilisateur</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color:rgb(29, 36, 33);
-            --secondary-color:rgb(3, 88, 46);
-            --accent-color: #3498db;
-            --background-color: #f8f9fa;
-            --card-shadow: 0 4px 6px rgba(5, 80, 34, 0.1);
-        }
+    <title>Home -  Fooball Atlass</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+<body>
+    <!-- Sidebar -->
+    <?php include '../includes/sidebar.php'; ?>
+
+    <!-- Main Content -->
+    <div class="content">
+   
+    <header>
+    <!-- Barre de navigation -->
+    <?php
+$base_path = (strpos($_SERVER['SCRIPT_FILENAME'], '/pages/') !== false) ? '../' : '';
+?>
+<link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/style.css">
+
+
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm mb-4" style="background-color: #004d00;">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white fw-bold" href="#">
+            <?php
+// Vérifier si la page est dans le dossier "pages"
+$path = (strpos($_SERVER['SCRIPT_FILENAME'], '/pages/') !== false) ? '../' : '';
+?>
+<img src="<?php echo $path; ?>assets/images/logo.jpg" alt="Logo"
+
+                style="height: 40px; margin-right: 10px;">
+                Foot Atlass
+            </a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#"></a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#">Coupe du Trône</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#">Actualité</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-success text-white" href="/site_football/pages/auth.php">Se connecter</a></li>
+                <li class="nav-item"><a class="nav-link btn btn-success text-white" href="/site_football/pages/logout.php"> Deconnexion</a></li>
+            </ul>
+        </div>
+    </nav>
+</header>
+
+
+        <!-- Header Banner -->
+        <div class="header-banner mb-4">
+        <style>
+       :root {
+            --vert: #007A33;
+            --beige: #F5F5DC;
+            --gris: #D3D3D3;
+            --blanc: #FFFFFF;
+            --noir: #222;
+            --jaune: #BBF000;
+        }
+        
         body {
-            background-color: var(--background-color);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
         }
-
-        .navbar {
-            background: var(--primary-color) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .navbar-brand {
-            font-weight: 600;
-            color: #fff !important;
-        }
-
-        .nav-link {
+        
+        .landing-container {
+            height: 100vh;
             position: relative;
-            padding: 0.5rem 1rem;
-            transition: color 0.3s ease;
+            background-color: var(--blanc);
         }
-
-        .nav-link:hover::after {
-            content: '';
+        
+        .bg-image {
             position: absolute;
-            bottom: 0;
-            left: 1rem;
-            right: 1rem;
-            height: 2px;
-            background-color: var(--accent-color);
+            top: 0;
+            left: 0;
+            width: 60%;
+            height: 100%;
+            /* Remplacez cette URL par le chemin vers votre image locale */
+            background-image: url('../assets/images/back2.jpg');
+            background-size: cover;
+            background-position: center;
+            clip-path: polygon(0 0, 100% 0, 70% 100%, 0 100%);
+            z-index: 0;
         }
-
-        .dashboard-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            border-radius: 0 0 1rem 1rem;
+        
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 60%;
+            height: 100%;
+            background-color: rgba(0, 122, 51, 0.3);
+            clip-path: polygon(0 0, 100% 0, 70% 100%, 0 100%);
+            z-index: 1;
         }
-
-        .match-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--card-shadow);
-            transition: transform 0.2s ease;
+        
+        .content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
         }
-
-        .match-card:hover {
-            transform: translateY(-5px);
+        
+        .header {
+            padding: 20px;
+            color: var(--vert);
         }
-
-        .team-logo {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
+        
+        .main-content {
+            padding: 20px;
         }
-
-        .score {
+        
+        .title {
+            color: var(--vert);
+            font-weight: 800;
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+        
+        .subtitle {
+            color: var(--noir);
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+        
+        .circle-button {
+            width: 60px;
+            height: 60px;
+            background-color: var(--vert);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--blanc);
             font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .vote-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
+            margin: 30px 0;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
-
-        .vote-btn:hover {
-            transform: scale(1.05);
+        
+        .circle-button:hover {
+            background-color: var(--jaune);
+            color: var(--noir);
+        }
+        
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            padding: 0 20px;
+            color: var(--vert);
+            font-size: 0.9rem;
+        }
+        
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 60%;
+            height: 100%;
+            background-image: 
+                /* Remplacez cette URL par le chemin vers votre image locale */
+                url('votre-image-grid.jpg'),
+                linear-gradient(to right, rgba(0, 122, 51, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 122, 51, 0.1) 1px, transparent 1px);
+            background-size: cover, 20px 20px, 20px 20px;
+            background-position: center, 0 0, 0 0;
+            clip-path: polygon(0 0, 100% 0, 70% 100%, 0 100%);
+            z-index: 1;
+        }
+        
+        .welcome-section {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .welcome-section h2 {
+            color:#222;;
+            font-weight: 100;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-section p {
+            color: var(--noir);
         }
 
-        .chat-box {
-            background: white;
-            border-radius: 1rem;
-            padding: 1rem;
-            max-height: 300px;
-            overflow-y: auto;
-            box-shadow: var(--card-shadow);
-        }
+        /* Style pour le bouton de discussion */
+.bi.bi-chat-dots {
+  display: inline-block;
+  margin: 10px 0;
+}
 
-        .message {
-            padding: 0.5rem 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 1rem;
-            background: #f8f9fa;
-        }
+.bi.bi-chat-dots a {
+  display: flex;
+  align-items: center;
+  background-color:var(--jaune) ;
+  color: var(--blanc);
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
 
-        .loading-spinner {
-            width: 3rem;
-            height: 3rem;
-        }
+.bi.bi-chat-dots a i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
 
-        @media (max-width: 768px) {
-            .match-card {
-                padding: 1rem;
-            }
-            
-            .team-logo {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .score {
-                font-size: 1.2rem;
-            }
-        }
+.bi.bi-chat-dots a:hover {
+  background-color:var(--vert) ;
+  color: var(--noir);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
     </style>
 </head>
 <body>
-    
-    <?php session_start(); include "../config/db.php";
-    if (!isset($_SESSION['user_id'])) { header("Location: auth.php"); exit(); }
-    $user_id = $_SESSION['user_id']; ?>
-
-    <!-- Navbar améliorée -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-    <img src="../assets/images/logo.jpg" alt="Connexion" id="login-btn" style="  width: 80px;">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-trophy me-2"></i>Dashboard 
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="profile.php">
-                            <i class="fas fa-user me-1"></i>Profil
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="user_joueurs.php">
-                            <i class="fas fa-users me-1"></i>Joueurs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="equipes.php">
-                            <i class="fas fa-futbol me-1"></i>Équipes
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../index.php">
-                            <i class="fas fa-home me-2"></i>Acceuil
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-danger" href="logout.php">
-                            <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
-                        </a>
-                    </li>
-                </ul>
+    <div class="landing-container">
+        <div class="bg-image"></div>
+        <div class="overlay"></div>
+        <div class="grid-overlay"></div>
+        
+        <div class="content">
+            <div class="header d-flex justify-content-between">
+                <div class="company">Football Atlas</div>
+                <div class="page-number"></div>
             </div>
-        </div>
-    </nav>
-
-    <!-- En-tête du dashboard -->
-    <header class="dashboard-header">
-        <div class="container">
-            <h1 class="text-center mb-0">
-                <i class="fas fa-home me-2"></i>Bienvenue sur votre espace
-            </h1>
-        </div>
-    </header>
-
-    <!-- Contenu principal -->
-    <main class="container">
-        <div class="row">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="fa-regular fa-futbol"></i>Matchs et résultats</h2>
-                    <form class="d-flex" role="search">
-                       <input class="form-control me-2" type="search" id="search" placeholder="Rechercher un match..." aria-label="Search">
-                       <button class="btn btn-outline-success" type="button">Rechercher</button>
-                    </form>
-
-                     <div id="search-results" class="mt-3"></div>
-                </div>
-
-                <!-- Zone de chargement -->
-                <div id="loading" class="text-center d-none">
-                    <div class="spinner-border loading-spinner text-primary" role="status">
-                        <span class="visually-hidden">Chargement...</span>
+            
+            <div class="row h-75">
+                <div class="col-md-6"></div>
+                <div class="col-md-5 d-flex align-items-center">
+                    <div class="main-content">
+                        <h1 class="title">Bienvenu <?php echo $nom_utilisateur; ?></h1>
+                        <div class="bi bi-chat-dots">
+                        <a href="discussion.php" class="bi bi-chat-dots">
+                         <i class="bi bi-chat-dots"></i> Discussion 
+                        </a>
+                        </div>
+                        <main>
+                            <section class="welcome-section">
+                            <h5> Bienvenue dans votre espace personnel. Suivez l'actualité de votre équipe, connecté avec la communauté des passionnés de football ! </h5>
+                                <p></p>
+                            </section>
+                        </main>
                     </div>
                 </div>
-
-                <!-- Liste des matchs -->
-                <div id="matches-list">
-                    <!-- Le contenu sera chargé via AJAX -->
-                </div>
+            </div>
+            
+            <div class="footer d-flex justify-content-between">
+                <div>Presented by team fottAtlass</div>
+                <div>Getting Started</div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            function loadMatches(filter = 'all') {
-                $('#loading').removeClass('d-none');
-                $('#matches-list').addClass('d-none');
-                
-                $.get("matches.php", { filter: filter }, function(data) {
-                    $("#matches-list").html(data);
-                    $('#loading').addClass('d-none');
-                    $('#matches-list').removeClass('d-none');
-                });
-            }
-
-            // Chargement initial
-            loadMatches();
-
-            // Fonction de filtrage
-            window.filterMatches = function(filter) {
-                loadMatches(filter);
-            }
-
-            // Rafraîchissement automatique pour les matchs en direct
-            setInterval(function() {
-                if($('.match-card[data-status="live"]').length > 0) {
-                    loadMatches('live');
-                }
-            }, 60000); // Rafraîchit toutes les minutes
-        });
-
-     
-
-
-    </script>
 </body>
 </html>

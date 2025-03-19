@@ -4,3 +4,71 @@ body {
 h1 {
     color: #343a40;
 }
+
+  /* Palette de couleurs */
+  :root {
+    --vert-fonce: #004d00;
+    --vert-clair: #00b300;
+    --blanc: #ffffff;
+    --noir: #222222;
+}
+
+/* Styles globaux */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 80px;
+    height: 100vh;
+    background: var(--vert-fonce);
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    z-index: 1000;
+}
+.sidebar a {
+    color: white;
+    font-size: 20px;
+    margin: 20px 0;
+    transition: 0.3s;
+}
+.sidebar a:hover {
+    color: var(--vert-clair);
+    transform: scale(1.2);
+}
+
+/* Contenu principal */
+.content {
+    margin-left: 100px;
+    padding: 20px;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--vert-fonce);
+}
+.navbar .nav-link {
+    color: white !important;
+    font-weight: bold;
+}
+.navbar .nav-link:hover {
+    color: var(--vert-clair) !important;
+}
+
+.navbar {
+    padding: 10px 20px;
+}
+.navbar-brand {
+    display: flex;
+    align-items: center;
+}
+.content {
+    margin-left: 80px; /* Ajuste selon la largeur de ta sidebar */
+}

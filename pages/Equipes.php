@@ -5,9 +5,9 @@
   include "../config/db.php";
 
   
-    
-    // Récupérer toutes les équipes
-    $stmt_equipes = $pdo->query("SELECT id, nom FROM equipe ORDER BY id");
+  $stmt_equipes = $pdo->query("SELECT id, nom, logo FROM equipe ORDER BY id");
+
+
 
 
 ?>
@@ -15,51 +15,21 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Équipes - Foot Atlass</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Equipe -  Football Atlass</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
-        body {
-            background-color: #f5f5f5;
-            font-family: 'Arial', sans-serif;
-        }
-        .navbar {
-            background-color: #004D00 !important;
-        }
-        .navbar .nav-link {
-            color: white !important;
-            font-weight: bold;
-        }
-        .navbar .nav-link:hover {
-            color: var(--vert-clair) !important;
-        }
-
-        .sidebar {
-            background-color: #004D00;
-            height: 100vh;
-            position: fixed;
-            width: 60px;
-            padding-top: 20px;
-        }
      
-        .sidebar a {
-            display: block;
-            text-align: center;
-            padding: 15px 0;
-            color: white;
-            text-decoration: none;
-        }
-        
-          /* Contenu principal */
-          .content {
-            margin-left: 100px;
-            padding: 20px;
-        }
 
-        .main-content {
-            margin-left: 75px;
-        }
+        
+     
         .team-container {
             background-color: white;
             border-radius: 10px;
@@ -132,43 +102,12 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <div class="sidebar">
-        <a href="index.php"><i class="fas fa-home fa-2x"></i></a>
-        <a href="competitions.php"><i class="fas fa-trophy fa-2x"></i></a>
-        <a href="statistiques.php"><i class="fas fa-chart-line fa-2x"></i></a>
-        <a href="profil.php"><i class="fas fa-user fa-2x"></i></a>
-    </div>
+    <?php include '../includes/sidebar.php'; ?>
 
     <!-- Main Content -->
-    <div class="main-content">
-        
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container">
-                <a class="navbar-brand" href="index.php">
-                    <img src="../assets/images/logo.jpg" alt="Foot Atlass" height="30"> Foot Atlass
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="botola.php">Botola Pro</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="coupe.php">Coupe du Trône</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="equipes.php">Équipes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="login.php">Se connecter</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+    <div class="content">
+   
+    <?php include '../includes/header.php'; ?>
 
         <!-- Header Banner -->
         <div class="header-banner mb-4">
@@ -178,6 +117,7 @@
                 <p>Découvrez toutes les équipes et leurs joueurs</p>
             </div>
         </div>
+        
 
         <!-- Équipes et Joueurs -->
         <div class="container py-4">
@@ -187,11 +127,18 @@
                     while ($row_equipe = $stmt_equipes->fetch()) {
                         $equipe_id = $row_equipe['id'];
                         $equipe_nom = $row_equipe['nom'];
+                      
+                       
+                        
                     ?>
                     <div class="team-container">
                         <div class="team-header" onclick="toggleTeam(<?php echo $equipe_id; ?>)">
                             <div class="d-flex align-items-center">
-                                <img src="logo/<?php echo $equipe_id; ?>.jpg" alt="<?php echo $equipe_nom; ?>" class="team-logo">
+                            <div class="d-flex align-items-center">
+                            <img src="../assets/images/<?php echo htmlspecialchars($row_equipe['logo']); ?>" alt="Logo de <?php echo htmlspecialchars($row_equipe['nom']); ?>" class="team-logo">
+
+  
+                            </div>
                                 <h4 class="mb-0"><?php echo $equipe_nom; ?></h4>
                             </div>
                             <i class="fas fa-chevron-down"></i>
