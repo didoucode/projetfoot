@@ -17,16 +17,16 @@ $equipe = $stmt_equipe->fetch();
 if (!$equipe) {
     die("Équipe non trouvée.");
 }
-// Récupérer les matchs
-$stmt = $pdo->prepare("
-    SELECT m.id, m.equipe1_id, m.equipe2_id, m.score_equipe1, m.score_equipe2, m.date, e1.nom AS equipe1_nom, e2.nom AS equipe2_nom
-    FROM matchs m
-    JOIN equipe e1 ON m.equipe1_id = e1.id
-    JOIN equipe e2 ON m.equipe2_id = e2.id
-    ORDER BY m.date DESC");
-$stmt->execute();
+$query_matchs = "SELECT * FROM matchs WHERE (equipe1_id = ? OR equipe2_id = ?) AND date < NOW() ORDER BY journee DESC";
+$stmt = $pdo->prepare($query_matchs);
 
-$matchs = $stmt->fetchAll();
+// Lier les paramètres avec bindParam
+$stmt->bindParam(1, $equipe_id, PDO::PARAM_INT);
+$stmt->bindParam(2, $equipe_id, PDO::PARAM_INT);
+$stmt->execute();
+$matchs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
 
 $teamId = isset($_GET['id']) ? (int)$_GET['id'] : 0; // Récupérer l'ID de l'équipe depuis l'URL
 $queryinfo = "SELECT * FROM informations WHERE equipe_id = :teamId";
@@ -131,6 +131,24 @@ $stmt_classement->execute();
 
 // Récupérer tous les résultats sous forme de tableau associatif
 $classement = $stmt_classement->fetchAll(PDO::FETCH_ASSOC);
+
+$query_logo = "
+    SELECT m.*, e1.logo AS logo_equipe1, e2.logo AS logo_equipe2
+    FROM matchs m
+    LEFT JOIN equipe e1 ON m.equipe1_id = e1.id
+    LEFT JOIN equipe e2 ON m.equipe2_id = e2.id
+    WHERE (m.equipe1_id = ? OR m.equipe2_id = ?) AND m.date < NOW()
+    ORDER BY m.journee DESC
+";
+
+$stmt = $pdo->prepare($query_logo);
+
+// Lier les paramètres avec bindParam
+$stmt->bindParam(1, $equipe_id, PDO::PARAM_INT);
+$stmt->bindParam(2, $equipe_id, PDO::PARAM_INT);
+$stmt->execute();
+$matchs = $stmt->fetchAll();
+
 
 // Liste des trophées avec leurs images
 $trophee_images = [
@@ -701,28 +719,66 @@ ul {
         <!-- Classement -->
 
         <div class="informations">
+        <section class="match-results">
+    <h3>Botola Pro League 1 <img src="../assets/images/trophy.png" style="width: 50px; height: 50px;"></h3>
+
+    <!-- Navigation pour les boutons "Précédent" et "Suivant" -->
     <div class="navigation">
         <button class="prev">◀ PRÉCÉDENT</button>
         <button class="next">SUIVANT ▶</button>
     </div>
-    <section class="match-results">
-    <h3>Botola Pro League 1 <img src="../assets/images/trophy.png" style="width: 50px; height: 50px;"></h3>
 
-        <ul>
-            <?php foreach ($matchs as $match): ?>
-                <li class="match-item">
-                    <span class="date"><?php echo date('d/m/Y', strtotime($match['date'])); ?></span>
-                    <span class="team"><?php echo $match['equipe1_nom']; ?></span>
-                    <span class="score"><?php echo $match['score_equipe1']; ?></span> -
-                    <span class="score"><?php echo $match['score_equipe2']; ?></span>
-                    <span class="team"><?php echo $match['equipe2_nom']; ?></span>
-                    <span class="result <?php echo getMatchResultClass($match['score_equipe1'], $match['score_equipe2'], 1); ?>">
-                        <?php echo getMatchResult($match['score_equipe1'], $match['score_equipe2']); ?>
-                    </span>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-    </section>
+    <ul>
+
+        <?php foreach ($matchs as $match): ?>
+            <?php
+
+                // Déterminer le résultat du match en fonction des scores
+                if ($match['score_equipe1'] > $match['score_equipe2']) {
+                    // Si l'équipe 1 gagne
+                    $result = 'V';
+                    $resultClass = 'win';  // Appliquer la classe pour la victoire
+                } elseif ($match['score_equipe1'] < $match['score_equipe2']) {
+                    // Si l'équipe 2 gagne
+                    $result = 'L';
+                    $resultClass = 'lose';  // Appliquer la classe pour la défaite
+                } else {
+                    // Si c'est un match nul
+                    $result = 'N';
+                    $resultClass = 'draw';  // Appliquer la classe pour le match nul
+                }
+
+                // Vérifie si le match concerne l'équipe sélectionnée (ex: $equipe_id)
+                if ($match['equipe1_id'] == $equipe_id) {
+                    // Si l'équipe 1 est l'équipe sélectionnée, le résultat est basé sur l'équipe 1
+                    $result = ($match['score_equipe1'] > $match['score_equipe2']) ? 'V' : (($match['score_equipe1'] < $match['score_equipe2']) ? 'L' : 'N');
+                    $resultClass = ($result === 'V') ? 'win' : (($result === 'L') ? 'lose' : 'draw');
+                } elseif ($match['equipe2_id'] == $equipe_id) {
+                    // Si l'équipe 2 est l'équipe sélectionnée, le résultat est basé sur l'équipe 2
+                    $result = ($match['score_equipe2'] > $match['score_equipe1']) ? 'V' : (($match['score_equipe2'] < $match['score_equipe1']) ? 'L' : 'N');
+                    $resultClass = ($result === 'V') ? 'win' : (($result === 'L') ? 'lose' : 'draw');
+                }
+            ?>
+
+            <li class="match-item">
+                <span class="date"><?php echo date('d/m/Y', strtotime($match['date'])); ?></span>
+                <span class="team">
+                    <img src="../assets/images/<?php echo $match['logo_equipe1']; ?>" alt="Logo de l'équipe 1" style="width: 30px; height: 30px;">
+                </span>
+                <span class="score"><?php echo $match['score_equipe1']; ?></span> -
+                <span class="score"><?php echo $match['score_equipe2']; ?></span>
+                <span class="team">
+                    <img src="../assets/images/<?php echo $match['logo_equipe2']; ?>" alt="Logo de l'équipe 2" style="width: 30px; height: 30px;">
+                </span>
+                <span class="result <?php echo $resultClass; ?>">  <!-- Ajouter la classe CSS pour le résultat -->
+                    <?php echo $result; ?> <!-- Afficher le résultat comme V, L, ou N -->
+                </span>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</section>
+
+
     <section class="match-info">
 
 
@@ -887,18 +943,18 @@ ul {
 </body>
 </html>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+   document.addEventListener("DOMContentLoaded", function() {
     const prevBtn = document.querySelector(".prev");
     const nextBtn = document.querySelector(".next");
     const matchList = document.querySelector(".match-results ul");
 
     let index = 0;
-    const matches = matchList.children;
+    const matches = matchList.querySelectorAll(".match-item"); // Utilisation de querySelectorAll pour les éléments <li> de chaque match
     const matchesPerPage = 3;
 
     function showMatches() {
         for (let i = 0; i < matches.length; i++) {
-            matches[i].style.display = i >= index && i < index + matchesPerPage ? "flex" : "none";
+            matches[i].style.display = (i >= index && i < index + matchesPerPage) ? "flex" : "none";
         }
     }
 
@@ -918,4 +974,5 @@ ul {
 
     showMatches();
 });
+
 </script>
