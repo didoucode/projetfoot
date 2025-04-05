@@ -196,33 +196,9 @@ $trophee_images = [
             border-radius: 50%;
             object-fit: cover;
         }
-        .navbar {
+        
 
-            background: var(--primary-color) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            width: 100%;
-        }
-
-        .navbar-brand {
-            font-weight: 600;
-            color: #fff !important;
-        }
-
-        .nav-link {
-            position: relative;
-            padding: 0.5rem 1rem;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link:hover::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 1rem;
-            right: 1rem;
-            height: 2px;
-            background-color: var(--accent-color);
-        }
+     
 .chart-container {
     display: flex;
     justify-content: center;
@@ -693,46 +669,14 @@ ul {
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark">
-    <img src="../assets/images/logo.jpg" alt="Connexion" id="login-btn" style="  width: 80px;">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-trophy me-2"></i>Dashboard
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="profile.php">
-                            <i class="fas fa-user me-1"></i>Profil
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="user_joueurs.php">
-                            <i class="fas fa-users me-1"></i>Joueurs
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="equipes.php">
-                            <i class="fas fa-futbol me-1"></i>Équipes
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../index.php">
-                            <i class="fas fa-home me-2"></i>Acceuil
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-danger" href="logout.php">
-                            <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+  <!-- Sidebar -->
+  <?php include '../includes/sidebar.php'; ?>
+
+<!-- Main Content -->
+<div class="content">
+
+<?php include '../includes/header.php'; ?>
+
 <div class="container py-4">
     <div class="team-container text-center">
         <!-- Logo et nom de l'équipe -->

@@ -19,11 +19,16 @@ $path = (strpos($_SERVER['SCRIPT_FILENAME'], '/pages/') !== false) ? '../' : '';
                 Foot Atlass
             </a>
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#">Botola Pro</a></li>
-                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#">Coupe du Trône</a></li>
-                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#">Actualité</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-success text-white" href="/site_football/pages/auth.php">Se connecter</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-success text-white" href="/site_football/pages/logout.php"> Deconnexion</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold" href="/site_football/pages/botolapro.php">Botola Pro</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold" href="/site_football/pages/CoupeTrone.php">Coupe du Trône</a></li>
+                
+                <li class="nav-item"><a class="nav-link text-white fw-bold" href="/site_football/pages//site_football/pages/sandage.php">Sandage</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold" href="/site_football/pages/Equipes.php">Equipes</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#">Contact</a></li>
+                <li class="nav-item"><a class="nav-link text-white fw-bold" href="/site_football/pages/logout.php"> Deconnexion</a></li>
+               
+
+
             </ul>
         </div>
     </nav>

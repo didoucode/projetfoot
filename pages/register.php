@@ -55,6 +55,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -64,100 +72,108 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #0a0a0a;
-            overflow: hidden;
+            background-color: rgb(226, 220, 220);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('../assets/images/background.jpg') repeat center center/cover;
-            animation: moveBackground 8s linear infinite alternate;
-            filter: brightness(0.4);
-        }
-
-        @keyframes moveBackground {
-            0% { background-position: center top; }
-            100% { background-position: center bottom; }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .login-box {
-            width: 400px;
-            background-color: rgba(0, 0, 0, 0.8);
-            box-shadow: 0px 0px 15px rgba(255, 165, 0, 0.7);
-            border-radius: 10px;
+            width: 800px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .form-side {
+            width: 50%;
+            padding: 40px;
+            background-color: white;
+        }
+
+        .welcome-side {
+            width: 50%;
+            background-color: #BBF000;
             color: white;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
             position: relative;
-            z-index: 1;
+            transition: transform 0.6s ease-in-out;
         }
 
-        .form-control {
-            background-color: #222;
-            border: none;
-            color: white;
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
 
-        .form-control::placeholder {
-            color: #aaa;
+        .welcome-login {
+            border: 2px solid white;
+            padding: 8px 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: inline-block;
+            transition: 0.3s;
         }
 
-        .btn-warning {
-            background-color: #ffa500;
-            border: none;
-            font-weight: bold;
-        }
-
-        .btn-warning:hover {
-            background-color: #ff8c00;
+        .welcome-login:hover {
+            background-color: white;
+            color: #007A33;
         }
     </style>
 </head>
 <body>
 
-    <div class="background"></div>
+        <!-- Sidebar -->
+        <?php include '../includes/sidebar.php'; ?>
 
-    <div class="container d-flex justify-content-center align-items-center vh-100">
-        <div class="login-box p-4 rounded">
-            <h2 class="text-center">S'INSCRIRE</h2>
+<!-- Main Content -->
+<div class="content">
+    
+<?php include '../includes/header.php'; ?>
 
-            <!-- Affichage des messages d'erreur ou de succès -->
-            <?php if (!empty($error)) : ?>
-                <div class="alert alert-danger text-center"><?php echo $error; ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($success)) : ?>
-                <div class="alert alert-success text-center"><?php echo $success; ?></div>
-            <?php endif; ?>
-
-            <form action="" method="POST">
-                <div class="mb-3">
-                    <input type="text" name="username" class="form-control" placeholder="Nom complet" required>
-                </div>
-
-                <div class="mb-3">
-                    <input type="email" name="email" class="form-control" placeholder="Email" required>
-                </div>
-
-                <div class="mb-3">
-                    <input type="password" name="password" class="form-control" placeholder="Mot de passe" required>
-                </div>
-
-                <div class="mb-3">
-                    <input type="password" name="confirm_password" class="form-control" placeholder="Confirmer le mot de passe" required>
-                </div>
-
-                <button type="submit" class="btn btn-warning w-100 mt-3">S'INSCRIRE</button>
-            </form>
-
-            <div class="text-center mt-3">
-                <a href="auth.php" class="text-white">Déjà un compte ? Connectez-vous</a>
+    <div class="container">
+        
+        <div class="login-box">
+            <div class="form-side">
+                <h2 class="text-center">S'INSCRIRE</h2>
+                <form action="" method="POST">
+                    <div class="mb-3">
+                        <input type="text" name="username" class="form-control" placeholder="Nom utilisateur" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="email" name="email" class="form-control" placeholder="Email" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" name="password" class="form-control" placeholder="Mot de passe" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" name="confirm_password" class="form-control" placeholder="Confirmer le mot de passe" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mt-3">S'INSCRIRE</button>
+                </form>
+            </div>
+            <div class="welcome-side">
+                <div class="welcome-title">Welcome Back!</div>
+                <a href="auth.php" class="welcome-login">Login</a>
             </div>
         </div>
     </div>
-
+    </div>
 </body>
+
 </html>

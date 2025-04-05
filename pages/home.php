@@ -2,7 +2,14 @@
 
   session_start();
   include "../config/db.php";
-
+  
+  
+  
+  
+  
+  
+  
+  
 
 // Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['user_id'])) {
@@ -39,47 +46,30 @@ $nom_utilisateur = htmlspecialchars($user['username']); // Protection contre les
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     </head>
 <body>
+
+      <!-- Affichage des notifications -->
+      <div class="notifications">
+            <h2></h2>
+            <ul class="list-group" id="notifications-list">
+                <!-- Les notifications seront affichées ici dynamiquement -->
+            </ul>
+     </div>
+
+
+
     <!-- Sidebar -->
     <?php include '../includes/sidebar.php'; ?>
 
     <!-- Main Content -->
     <div class="content">
    
-    <header>
-    <!-- Barre de navigation -->
-    <?php
-$base_path = (strpos($_SERVER['SCRIPT_FILENAME'], '/pages/') !== false) ? '../' : '';
-?>
-<link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/style.css">
-
-
-    <nav class="navbar navbar-expand-lg navbar-light shadow-sm mb-4" style="background-color: #004d00;">
-        <div class="container-fluid">
-            <a class="navbar-brand text-white fw-bold" href="#">
-            <?php
-// Vérifier si la page est dans le dossier "pages"
-$path = (strpos($_SERVER['SCRIPT_FILENAME'], '/pages/') !== false) ? '../' : '';
-?>
-<img src="<?php echo $path; ?>assets/images/logo.jpg" alt="Logo"
-
-                style="height: 40px; margin-right: 10px;">
-                Foot Atlass
-            </a>
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#"></a></li>
-                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#">Coupe du Trône</a></li>
-                <li class="nav-item"><a class="nav-link text-white fw-bold" href="#">Actualité</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-success text-white" href="/site_football/pages/auth.php">Se connecter</a></li>
-                <li class="nav-item"><a class="nav-link btn btn-success text-white" href="/site_football/pages/logout.php"> Deconnexion</a></li>
-            </ul>
-        </div>
-    </nav>
-</header>
-
+    <?php include '../includes/header.php'; ?>
 
         <!-- Header Banner -->
         <div class="header-banner mb-4">
@@ -90,8 +80,12 @@ $path = (strpos($_SERVER['SCRIPT_FILENAME'], '/pages/') !== false) ? '../' : '';
             --gris: #D3D3D3;
             --blanc: #FFFFFF;
             --noir: #222;
-            --jaune: #BBF000;
+            --jaune:rgb(122, 153, 10);
         }
+        html {
+        scroll-behavior: smooth;
+        }
+
         
         body {
             font-family: 'Arial', sans-serif;
@@ -252,6 +246,96 @@ $path = (strpos($_SERVER['SCRIPT_FILENAME'], '/pages/') !== false) ? '../' : '';
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+
+
+/*NOTIFICATION*/
+/* Conteneur de notifications */
+.notifications {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: 320px; /* Largeur du conteneur des notifications */
+    max-height: 80vh; /* Limite la hauteur du conteneur */
+    overflow-y: auto; /* Permet le défilement si le nombre de notifications est trop élevé */
+}
+
+/* Style de chaque notification */
+.notification {
+    background-color: rgba(255, 255, 255, 0.9); /* Fond blanc transparent */
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column; /* Empile les éléments de manière verticale */
+    max-width: 100%;
+    font-size: 14px; /* Taille de texte plus petite */
+    word-wrap: break-word;
+}
+
+/* Style de l'emoji (sonnerie) */
+.notification .emoji {
+    font-size: 20px; /* Taille de l'emoji */
+    margin-right: 10px;
+    color: black; /* Couleur de l'emoji d'alarme */
+    margin-bottom: 5px;
+}
+
+/* Contenu texte de la notification */
+.notification p {
+    flex-grow: 1;
+    margin: 0;
+    color: #333;
+    font-size: 14px;
+}
+
+/* Styliser le lien "Ignorer" */
+.ignore-link {
+    color: #007A33;
+    text-decoration: none;  /* Enlever le soulignement */
+    margin-top: 5px;
+    display: inline-block;
+}
+
+/* Ajoute une petite animation au survol du lien "Ignorer" */
+.ignore-link:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Animation de la notification qui slide depuis le côté */
+@keyframes slideIn {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+/* Défilement des notifications lorsque la liste est longue */
+#notifications-list {
+    padding: 0;
+}
+
+.chat-box {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: var(--card-shadow);
+        }
+
+        .message {
+            padding: 0.5rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 1rem;
+            background: #f8f9fa;
+        }
+
+
     </style>
 </head>
 <body>
@@ -272,8 +356,10 @@ $path = (strpos($_SERVER['SCRIPT_FILENAME'], '/pages/') !== false) ? '../' : '';
                     <div class="main-content">
                         <h1 class="title">Bienvenu <?php echo $nom_utilisateur; ?></h1>
                         <div class="bi bi-chat-dots">
-                        <a href="discussion.php" class="bi bi-chat-dots">
-                         <i class="bi bi-chat-dots"></i> Discussion 
+                       
+                        <a href="discussion.php#chat-section" class="bi bi-chat-dots">
+                        <i class="bi bi-chat-dots"></i> Discussion 
+                           </a>
                         </a>
                         </div>
                         <main>
@@ -293,7 +379,160 @@ $path = (strpos($_SERVER['SCRIPT_FILENAME'], '/pages/') !== false) ? '../' : '';
         </div>
     </div>
 
+ <!-- Zone de Chat -->
+ <div id="chat-section" class="row mt-5">
+   
+    <div class="col-12">
+      <h3><i class="fas fa-comments me-2"></i> Chat en direct</h3>
+      </div>
+
+        <!-- Zone de messages -->
+        <div class="chat-box" id="chat-box">
+            <!-- Les messages seront chargés ici -->
+        </div>
+
+        <!-- Formulaire d'envoi de message -->
+        <form id="chat-form" class="mt-3">
+            <div class="form-group">
+                <textarea class="form-control" id="chat-message" placeholder="Écrivez un message..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Envoyer</button>
+        </form>
+    
+</div>
+
+
+
+
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- NOTIFICATIONS-->    
+     
+<script>
+    // Fonction pour charger les notifications à partir du serveur
+    function loadNotifications() {
+        // Effectuer une requête AJAX pour récupérer les notifications
+        fetch('get_notifications.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.notifications && data.notifications.length > 0) {
+                    const notificationsList = document.getElementById('notifications-list');
+                    notificationsList.innerHTML = ''; // Vider la liste avant d'ajouter de nouvelles notifications
+                    
+                    // Afficher chaque notification
+                    data.notifications.forEach(notification => {
+                        const notificationElement = document.createElement('div');
+                        notificationElement.classList.add('notification');  // Appliquer la classe 'notification'
+                        notificationElement.id = 'notification-' + notification.id;  // Attribuer un id unique pour chaque notification
+                        
+                        // Ajouter un timestamp pour la notification (quand elle a été vue pour la dernière fois)
+                        const notificationTimestamp = new Date().getTime();
+
+                        // Créer le contenu de la notification avec l'icône de la cloche et le lien Ignorer
+                        notificationElement.innerHTML = `
+                            <div class="emoji"><i class="fa fa-bell"></i></div> <!-- Icône de cloche -->
+                            <p>${notification.message}</p>
+                            <a href="#" class="ignore-link" onclick="ignoreNotification(${notification.id}, ${notificationTimestamp})">Ignorer</a>
+                        `;
+                        
+                        // Ajouter la notification à la liste
+                        notificationsList.appendChild(notificationElement);
+
+                        // Vérifier si la notification doit être cachée ou réapparaître
+                        checkNotificationVisibility(notificationElement, notificationTimestamp);
+                    });
+                }
+            })
+            .catch(error => console.error('Erreur lors de la récupération des notifications:', error));
+    }
+
+    // Fonction pour vérifier la visibilité de la notification en fonction du timestamp
+    function checkNotificationVisibility(notificationElement, notificationTimestamp) {
+        // Calculer le temps écoulé depuis l'affichage de la notification
+        const currentTime = new Date().getTime();
+        const timeElapsed = currentTime - notificationTimestamp;
+
+        // Vérifier si 1 heure est écoulée (3600000 ms)
+        if (timeElapsed >= 3600000) {
+            // Si 1 heure est écoulée, cacher la notification
+            setTimeout(() => {
+                notificationElement.style.display = 'none';
+            }, 3600000); // 1 heure en millisecondes
+
+            // Si 2 heures sont écoulées, réafficher la notification
+            setTimeout(() => {
+                notificationElement.style.display = 'block';
+            }, 7200000); // 2 heures en millisecondes
+        }
+    }
+
+    // Fonction pour ignorer une notification
+    function ignoreNotification(notificationId, notificationTimestamp) {
+        // Cacher la notification de l'interface
+        const notificationElement = document.getElementById('notification-' + notificationId);
+        if (notificationElement) {
+            notificationElement.style.display = 'none';  // Masquer la notification
+        }
+
+        // Envoyer une requête AJAX pour marquer la notification comme ignorée, si nécessaire
+        fetch('ignore_notification.php?id=' + notificationId)
+            .then(response => response.json())
+            .then(data => console.log('Notification ignorée'))
+            .catch(error => console.error('Erreur lors de l\'ignorance de la notification:', error));
+
+        // Ajouter un délai pour réapparaître après 2 heures (ou selon l'intervalle souhaité)
+        setTimeout(() => {
+            notificationElement.style.display = 'block';
+        }, 7200000); // 2 heures en millisecondes
+    }
+
+    // Charger les notifications initiales
+    loadNotifications();
+
+    // Mettre à jour les notifications toutes les 5 secondes
+    setInterval(loadNotifications, 5000);
+
+
+/***********************************************************************************/
+//pour une petite chat
+$(document).ready(function() {
+    // Charger les messages
+    function loadMessages() {
+        $.get("chat.php", function(data) {
+            $('#chat-box').html(data);
+            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight); // Faites défiler vers le bas
+        });
+    }
+
+    // Envoyer un message
+    $('#chat-form').submit(function(e) {
+        e.preventDefault();
+
+        var message = $('#chat-message').val();
+        if (message.trim() != "") {
+            $.post("chat.php", { message: message }, function(response) {
+                $('#chat-message').val('');
+                loadMessages(); // Recharge les messages après l'envoi
+            });
+        }
+    });
+
+    // Rafraîchir les messages automatiquement toutes les 3 secondes
+    setInterval(loadMessages, 3000); // 3 secondes
+
+    // Charger les messages dès que la page est chargée
+    loadMessages();
+});
+
+
+
+</script>
+
+
+
 </body>
 </html>

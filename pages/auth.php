@@ -76,6 +76,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['forgot_password'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - Résultats Foot</title>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -85,124 +90,217 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['forgot_password'])) {
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #0a0a0a;
+            background-color:rgb(226, 220, 220);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('../assets/images/background.jpg') repeat center center/cover;
-            animation: moveBackground 8s linear infinite alternate;
-            filter: brightness(0.4);
-        }
-
-        @keyframes moveBackground {
-            0% { background-position: center top; }
-            100% { background-position: center bottom; }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .login-box {
-            width: 350px;
-            background-color: rgba(0, 0, 0, 0.8);
-            box-shadow: 0px 0px 15px rgba(255, 165, 0, 0.7);
-            border-radius: 10px;
+            width: 800px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .form-side {
+            width: 50%;
+            padding: 40px;
+            background-color: white;
+        }
+
+        .welcome-side {
+            width: 50%;
+            background-color:rgb(122, 153, 10);
             color: white;
-            padding: 20px;
-            position: relative;
-            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 30px;
         }
 
         .form-control {
-            background-color: #222;
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            color: #495057;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-control:focus {
+            border-color: #007A33;
+            box-shadow: 0 0 0 0.2rem rgb(122, 153, 10);
+        }
+
+        .btn-primary {
+            background-color: #007A33;
             border: none;
-            color: white;
+            border-radius: 8px;
+            padding: 12px;
+            font-weight: 500;
+            transition: 0.3s ease-in-out;
+            width: 100%;
+            margin-top: 15px;
         }
 
-        .form-control::placeholder {
-            color: #aaa;
+        .btn-primary:hover {
+            background-color: #004D00;
+            transform: translateY(-2px);
         }
 
-        a {
-            text-decoration: none;
-            font-size: 14px;
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
 
-        a.text-white:hover {
-            color: #ddd;
+        .welcome-login {
+            border: 2px solid white;
+            padding: 8px 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: inline-block;
+            transition: 0.3s;
         }
 
-        a.text-warning:hover {
-            color: #ffa500;
+        .welcome-login:hover {
+            background-color: white;
+            color: #007A33;
         }
 
-        .btn-warning {
-            background-color: #ffa500;
-            border: none;
-            font-weight: bold;
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
         }
 
-        .btn-warning:hover {
-            background-color: #ff8c00;
+        .social-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color:rgb(122, 153, 10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .social-icon:hover {
+            background-color: #007A33;
         }
 
         #forgot-password-form {
             display: none;
+            margin-top: 15px;
+        }
+
+        .links {
+            display: flex;
+            justify-content: space-between;
             margin-top: 10px;
+            font-size: 14px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #6c8eff;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
+        <!-- Sidebar -->
+        <?php include '../includes/sidebar.php'; ?>
 
- 
+<!-- Main Content -->
+<div class="content">
 
-    <div class="background"></div>
-   
+<?php include '../includes/header.php'; ?>
+    <div class="container">
+        <div class="login-box">
+            <div class="form-side">
+                <h2>Registration</h2>
 
-    <div class="container d-flex justify-content-center align-items-center vh-100">
-        <div class="login-box p-4 rounded">
-            <h2 class="text-center">LOG IN</h2>
+                <?php if ($error): ?>
+                    <div class="alert alert-danger text-center"><?php echo $error; ?></div>
+                <?php endif; ?>
 
-            <?php if ($error): ?>
-                <div class="alert alert-danger text-center"><?php echo $error; ?></div>
-            <?php endif; ?>
-
-            <form action="" method="post">
-                <div class="mb-3">
-                    <input type="text" name="username" class="form-control" placeholder="USERNAME" required>
-                </div>
-
-                <div class="mb-3">
-                    <input type="password" name="password" class="form-control" placeholder="PASSWORD" required>
-                </div>
-
-                <div class="d-flex justify-content-between">
-                    <a href="#" class="text-white" id="forgot-password-link">Mot de passe oublié</a>
-                    <a href="register.php" class="text-warning">S'inscrire</a>
-                </div>
-
-                <button type="submit" name="login" class="btn btn-warning w-100 mt-3">CONNEXION</button>
-            </form>
-
-            <!-- Formulaire caché pour mot de passe oublié -->
-            <div id="forgot-password-form">
-                <form action="reset_password.php" method="post">
-                    <div class="mt-3">
-                        <input type="email" name="email" class="form-control" placeholder="Entrez votre email" required>
+                <form action="" method="post">
+                    <div class="mb-3">
+                        <input type="text" name="username" class="form-control" placeholder="Username" required>
                     </div>
-                 
-                    <button type="submit" name="forgot_password" class="btn btn-warning w-100 mt-2">Envoyer à l'email</button>
+
+                  
+
+                    <div class="mb-3">
+                        <input type="password" name="password" class="form-control" placeholder="Password" required>
+                    </div>
+
+                    <div class="links">
+                        <a href="#" class="forgot-password-link" id="forgot-password-link">Mot de passe oublié</a>
+                        <a href="register.php" class="register-link">S'inscrire</a>
+                    </div>
+
+                    <button type="submit" name="login" class="btn btn-primary">CONNEXION</button>
+
+                    <div class="mt-3 text-center">
+                        <p>ou connectez-vous avec</p>
+                        <div class="social-login">
+                            <div class="social-icon">G</div>
+                            <div class="social-icon">f</div>
+                            <div class="social-icon">O</div>
+                            <div class="social-icon">in</div>
+                        </div>
+                    </div>
                 </form>
+
+                <!-- Formulaire caché pour mot de passe oublié -->
+                <div id="forgot-password-form">
+                    <form action="reset_password.php" method="post">
+                        <div class="mt-3">
+                            <input type="email" name="email" class="form-control" placeholder="Entrez votre email" required>
+                        </div>
+                     
+                        <button type="submit" name="forgot_password" class="btn btn-primary w-100 mt-2">Envoyer à l'email</button>
+                    </form>
+                </div>
+
+                <?php if (isset($message)): ?>
+                 <div class="alert alert-info text-center mt-3"><?php echo $message; ?></div>
+              <?php endif; ?>
             </div>
-
-            <?php if (isset($message)): ?>
-             <div class="alert alert-info text-center mt-3"><?php echo $message; ?></div>
-          <?php endif; ?>
+            <div class="welcome-side">
+                <div class="welcome-title">Welcome Back!</div>
+                <a href="login.php" class="welcome-login">Login</a>
+            </div>
         </div>
-
     </div>
+
+    
 
     <script>
         document.getElementById('forgot-password-link').addEventListener('click', function(event) {
@@ -211,6 +309,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['forgot_password'])) {
             forgotForm.style.display = (forgotForm.style.display === 'none' || forgotForm.style.display === '') ? 'block' : 'none';
         });
     </script>
-
 </body>
 </html>

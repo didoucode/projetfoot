@@ -4,17 +4,10 @@
   session_start();
   include "../config/db.php";
 
-<<<<<<< HEAD
-
-
-    // Récupérer toutes les équipes
-    $stmt_equipes = $pdo->query("SELECT id, nom FROM equipe ORDER BY id");
-=======
   
   $stmt_equipes = $pdo->query("SELECT id, nom, logo FROM equipe ORDER BY id");
 
 
->>>>>>> 9e2d6fa3db4e90c84e621b69e450d85c8c852262
 
 
 ?>
@@ -24,7 +17,7 @@
 <head>
 <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Equipe -  Football Atlass</title>
+    <title>Equipe -  Football Maroc</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -33,46 +26,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-<<<<<<< HEAD
-        body {
-            background-color: #f5f5f5;
-            font-family: 'Arial', sans-serif;
-        }
-        .navbar {
-            background-color: #004D00 !important;
-        }
-        .navbar .nav-link {
-            color: white !important;
-            font-weight: bold;
-        }
-        .navbar .nav-link:hover {
-            color: var(--vert-clair) !important;
-        }
-
-        .sidebar {
-            background-color: #004D00;
-            height: 100vh;
-            position: fixed;
-            width: 60px;
-            padding-top: 20px;
-        }
-
-        .sidebar a {
-            display: block;
-            text-align: center;
-            padding: 15px 0;
-            color: white;
-            text-decoration: none;
-        }
-
-          /* Contenu principal */
-          .content {
-            margin-left: 100px;
-            padding: 20px;
-        }
-=======
      
->>>>>>> 9e2d6fa3db4e90c84e621b69e450d85c8c852262
 
         
      
@@ -151,41 +105,9 @@
     <?php include '../includes/sidebar.php'; ?>
 
     <!-- Main Content -->
-<<<<<<< HEAD
-    <div class="main-content">
-
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container">
-                <a class="navbar-brand" href="index.php">
-                    <img src="../assets/images/logo.jpg" alt="Foot Atlass" height="30"> Foot Atlass
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="botola.php">Botola Pro</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="coupe.php">Coupe du Trône</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="equipes.php">Équipes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="login.php">Se connecter</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-=======
     <div class="content">
    
     <?php include '../includes/header.php'; ?>
->>>>>>> 9e2d6fa3db4e90c84e621b69e450d85c8c852262
 
         <!-- Header Banner -->
         <div class="header-banner mb-4">
@@ -199,21 +121,6 @@
 
         <!-- Équipes et Joueurs -->
         <div class="container py-4">
-<<<<<<< HEAD
-    <div class="row">
-        <div class="col-md-12">
-            <?php
-            while ($row_equipe = $stmt_equipes->fetch()) {
-                $equipe_id = $row_equipe['id'];
-                $equipe_nom = $row_equipe['nom'];
-            ?>
-            <div class="team-container">
-                <div class="team-header">
-                    <a href="arbo_equipe.php?id=<?php echo $equipe_id; ?>" class="d-flex align-items-center text-decoration-none">
-                        <img src="logo/<?php echo $equipe_id; ?>.jpg" alt="<?php echo $equipe_nom; ?>" class="team-logo">
-                        <h4 class="mb-0 ml-2"><?php echo $equipe_nom; ?></h4>
-                    </a>
-=======
             <div class="row">
                 <div class="col-md-12">
                     <?php
@@ -232,7 +139,12 @@
 
   
                             </div>
+                            <a href="arbo_equipe.php?id=<?php echo $equipe_id; ?>" style="text-decoration: none; color: inherit;">
+  
+
+
                                 <h4 class="mb-0"><?php echo $equipe_nom; ?></h4>
+                    </a>
                             </div>
                             <i class="fas fa-chevron-down"></i>
                         </div>
@@ -271,25 +183,14 @@
                         echo "<p>Aucune équipe trouvée</p>";
                     }
                     ?>
->>>>>>> 9e2d6fa3db4e90c84e621b69e450d85c8c852262
                 </div>
             </div>
-            <?php
-            }
-
-            // Si aucune équipe n'est trouvée
-            if ($stmt_equipes->rowCount() == 0) {
-                echo "<p>Aucune équipe trouvée</p>";
-            }
-            ?>
         </div>
     </div>
-</div>
-
 
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- <script>
+    <script>
         function toggleTeam(teamId) {
             const teamPlayers = document.getElementById('team-' + teamId);
             if (teamPlayers.style.display === 'block') {
@@ -297,7 +198,7 @@
             } else {
                 teamPlayers.style.display = 'block';
             }
-        } -->
+        }
     </script>
 </body>
 </html>

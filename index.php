@@ -309,7 +309,7 @@ box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         <div class="teams-banner mt-4">
             <div class="teams-slider">
                 <div class="team-logo"><img src="assets/images/wac.jpg" alt="Wydad"></div>
-                <div class="team-logo"><img src="assets/images/Rj.jpg" alt="Raja"></div>
+                <div class="team-logo"><img src="assets/images/raja.jpg" alt="Raja"></div>
                 <div class="team-logo"><img src="assets/images/faar.jpg" alt="FAR"></div>
                 <div class="team-logo"><img src="assets/images/fus.jpg" alt="FUS"></div>
                 <div class="team-logo"><img src="assets/images/mat.jpg" alt="MAT"></div>
@@ -319,7 +319,7 @@ box-shadow: 0 5px 15px rgba(0,0,0,0.2);
                 <div class="team-logo"><img src="assets/images/rsb.jpg" alt="RSB"></div>
                 <div class="team-logo"><img src="assets/images/mco.jpg" alt="MCO"></div>
                 <div class="team-logo"><img src="assets/images/wac.jpg" alt="Wydad"></div>
-                <div class="team-logo"><img src="assets/images/Rj.jpg" alt="Raja"></div>
+                <div class="team-logo"><img src="assets/images/raja.jpg" alt="Raja"></div>
                 <div class="team-logo"><img src="assets/images/faar.jpg" alt="FAR"></div>
                 <div class="team-logo"><img src="assets/images/fus.jpg" alt="FUS"></div>
                 <div class="team-logo"><img src="assets/images/mat.jpg" alt="MAT"></div>
@@ -346,7 +346,7 @@ box-shadow: 0 5px 15px rgba(0,0,0,0.2);
                     <div class="col-md-6">
                         <div class="match-card shadow-sm p-3 mb-3">
                             <div class="d-flex align-items-center">
-                                <img src="assets/images/Rj.jpg" class="match-img me-2" alt="Raja">
+                                <img src="assets/images/raja.jpg" class="match-img me-2" alt="Raja">
                                 <span class="fw-bold">Raja</span>
                                 <span class="ms-auto">0 - 0</span>
                                 <img src="assets/images/faar.jpg" class="match-img ms-2" alt="FAR">
@@ -404,7 +404,7 @@ box-shadow: 0 5px 15px rgba(0,0,0,0.2);
                         <span class="vs-badge">VS</span>
                         <div class="team-info">
                             <span class="fw-bold me-2">Raja</span>
-                            <img src="assets/images/Rj.jpg" class="match-img" alt="Raja">
+                            <img src="assets/images/raja.jpg" class="match-img" alt="Raja">
                         </div>
                         <span class="match-date">18 Mars 2025, 17:00</span>
                     </div>
