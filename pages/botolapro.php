@@ -2,13 +2,13 @@
 include "../config/db.php"; // Connexion à la base de données
 
 // Récupération des résultats des matchs joués
-$sqlMatchs = "SELECT 
-    r.id, 
-    m.id AS match_id, 
-    e1.nom AS equipe1, e1.logo AS logo1, 
-    e2.nom AS equipe2, e2.logo AS logo2, 
-    r.score_equipe1, r.score_equipe2, 
-    r.gagnant_id, g.nom AS gagnant, 
+$sqlMatchs = "SELECT
+    r.id,
+    m.id AS match_id,
+    e1.nom AS equipe1, e1.logo AS logo1,
+    e2.nom AS equipe2, e2.logo AS logo2,
+    r.score_equipe1, r.score_equipe2,
+    r.gagnant_id, g.nom AS gagnant,
     m.date, t.nom AS tournoi, m.tour
 FROM resultats r
 JOIN matchs m ON r.match_id = m.id
@@ -41,7 +41,7 @@ $userConnected = isset($_SESSION['user_id']);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         .match-card {
@@ -191,9 +191,9 @@ $userConnected = isset($_SESSION['user_id']);
 
             if (message.trim() != "") {
                 // AJOUTER LES MODIFICATIONS ICI
-                $.post("chat.php", { 
-                    message: message, 
-                    match_id: matchId 
+                $.post("chat.php", {
+                    message: message,
+                    match_id: matchId
                 }, function(response) {
                     if (response.error) {
                         alert(response.error);
@@ -221,9 +221,9 @@ $userConnected = isset($_SESSION['user_id']);
 
 
 
-   
+
 </script>
-  
+
 
 </body>
 </html>

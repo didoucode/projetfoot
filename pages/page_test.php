@@ -1,236 +1,507 @@
-<?php
-include "../config/db.php";
+<?php include "../config/db.php";
 
-// Récupérer les matchs
-$stmt = $pdo->prepare("
-    SELECT m.id, m.equipe1_id, m.equipe2_id, m.score_equipe1, m.score_equipe2, m.date, e1.nom AS equipe1_nom, e2.nom AS equipe2_nom
-    FROM matchs m
-    JOIN equipe e1 ON m.equipe1_id = e1.id
-    JOIN equipe e2 ON m.equipe2_id = e2.id
-    ORDER BY m.date DESC");
-$stmt->execute();
+$match_id = 69;
 
-$matchs = $stmt->fetchAll();
+$sql_match = "SELECT * FROM matchs WHERE id = ?";
+$stmt_match = $pdo->prepare($sql_match);
+$stmt_match->execute([$match_id]);
+$match = $stmt_match->fetch(PDO::FETCH_ASSOC);
 
-// Fonction pour déterminer le résultat (V = victoire, N = nul, D = défaite)
-function getMatchResult($score1, $score2) {
-    if ($score1 > $score2) {
-        return 'V'; // Victoire
-    } elseif ($score1 < $score2) {
-        return 'D'; // Défaite
-    } else {
-        return 'N'; // Nul
-    }
+if (!$match) {
+    die("Aucun match trouvé avec cet ID.");
 }
-function getMatchResultClass($score1, $score2, $equipeId) {
-    if ($score1 > $score2 && $equipeId == 1) {
-        return 'win'; // Victoire pour l'équipe 1
-    } elseif ($score1 < $score2 && $equipeId == 2) {
-        return 'win'; // Victoire pour l'équipe 2
-    } elseif ($score1 == $score2) {
-        return 'draw'; // Match nul
-    } else {
-        return 'lose'; // Défaite pour l'équipe
-    }
+
+
+// Récupérer les équipes
+$equipe_domicile_id = $match['equipe1_id'];
+$equipe_exterieur_id = $match['equipe2_id'];
+
+$stmt_equipe_domicile = $pdo->prepare("SELECT * FROM equipe WHERE id = ?");
+$stmt_equipe_domicile->execute([$equipe_domicile_id]);
+$equipe_domicile = $stmt_equipe_domicile->fetch(PDO::FETCH_ASSOC);
+
+$stmt_equipe_exterieur = $pdo->prepare("SELECT * FROM equipe WHERE id = ?");
+$stmt_equipe_exterieur->execute([$equipe_exterieur_id]);
+$equipe_exterieur = $stmt_equipe_exterieur->fetch(PDO::FETCH_ASSOC);
+
+// Récupérer les joueurs et leurs statistiques pour l'équipe à domicile
+$sql_stats_domicile = "
+    SELECT j.nom, j.prenom, j.numero_club, j.role, sj.*
+    FROM statistiques_joueurs sj
+    JOIN joueurs j ON sj.joueur_id = j.id
+    WHERE sj.match_id = ? AND j.equipes = ?
+    ORDER BY j.role, j.numero_club
+";
+
+
+$stmt_stats_domicile = $pdo->prepare($sql_stats_domicile);
+$stmt_stats_domicile->execute([$match_id, $equipe_domicile_id]);
+$stats_joueurs_domicile = $stmt_stats_domicile->fetchAll(PDO::FETCH_ASSOC);
+
+// Récupérer les joueurs et leurs statistiques pour l'équipe extérieure
+$sql_stats_exterieur = "
+    SELECT j.nom, j.prenom, j.numero_club, j.role,  sj.*
+    FROM statistiques_joueurs sj
+    JOIN joueurs j ON sj.joueur_id = j.id
+    WHERE sj.match_id = ? AND j.equipes = ?
+    ORDER BY j.role, j.numero_club
+";
+
+$stmt_stats_exterieur = $pdo->prepare($sql_stats_exterieur);
+$stmt_stats_exterieur->execute([$match_id, $equipe_exterieur_id]);
+$stats_joueurs_exterieur = $stmt_stats_exterieur->fetchAll(PDO::FETCH_ASSOC);
+
+// Récupérer les statistiques globales du match
+$sql_match_stats = "
+    SELECT * FROM performance_matchs
+    WHERE match_id = ?
+";
+$stmt_match_stats = $pdo->prepare($sql_match_stats);
+$stmt_match_stats->execute([$match_id]);
+$match_stats = $stmt_match_stats->fetch(PDO::FETCH_ASSOC);
+
+$id_match = 69;
+
+// Requête pour récupérer les stats + les équipes
+$sql = "SELECT
+    stats.*,
+    matchs.equipe1_id,
+    matchs.equipe2_id,
+    matchs.score_equipe1,
+    matchs.score_equipe2,
+    eq1.nom AS nom_equipe1,
+    eq2.nom AS nom_equipe2,
+    eq1.logo AS logo_equipe1,
+    eq2.logo AS logo_equipe2
+FROM stats_match AS stats
+JOIN matchs ON stats.id_match = matchs.id
+JOIN equipe AS eq1 ON matchs.equipe1_id = eq1.id
+JOIN equipe AS eq2 ON matchs.equipe2_id = eq2.id
+WHERE stats.id_match = :id_match";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute(['id_match' => $id_match]);
+$stats = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$stats) {
+    die('Aucune statistique trouvée pour ce match.');
 }
+
+// Fonction pour calculer la barre %
+function calcPourcentage($valEquipe1, $valEquipe2, $valEquipe) {
+    $total = $valEquipe1 + $valEquipe2;
+    return $total > 0 ? round(($valEquipe / $total) * 100) : 50;
+}
+
+// Liste des stats à afficher
+$statistiques = [
+    'possession' => 'Possession (%)',
+    'xG' => 'xG (Buts attendus)',
+    'tirs_total' => 'Tirs totaux',
+    'arrets_gardien' => 'Arrêts du gardien',
+    'corners' => 'Corners',
+    'fautes' => 'Fautes',
+    'passes' => 'Passes',
+    'tacles' => 'Tacles',
+    'coups_francs' => 'Coups francs',
+    'cartons_jaunes' => 'Cartons jaunes'
+];
+
+// Requête pour les joueurs de l'équipe 1
+$sqlJoueursEquipe1 = "
+SELECT sj.*, j.nom AS nom_joueur, j.prenom, j.role
+FROM statistiques_joueurs sj
+JOIN joueurs j ON sj.joueur_id = j.id
+WHERE sj.match_id = :match_id AND j.equipes = :equipe_id
+";
+$stmtJoueurs1 = $pdo->prepare($sqlJoueursEquipe1);
+$stmtJoueurs1->execute(['match_id' => $id_match, 'equipe_id' => $stats['equipe1_id']]);
+$joueursEquipe1 = $stmtJoueurs1->fetchAll(PDO::FETCH_ASSOC);
+
+// Requête pour les joueurs de l'équipe 2
+$sqlJoueursEquipe2 = "
+SELECT sj.*, j.nom AS nom_joueur, j.prenom, j.role
+FROM statistiques_joueurs sj
+JOIN joueurs j ON sj.joueur_id = j.id
+WHERE sj.match_id = :match_id AND j.equipes = :equipe_id
+";
+$stmtJoueurs2 = $pdo->prepare($sqlJoueursEquipe2);
+$stmtJoueurs2->execute(['match_id' => $id_match, 'equipe_id' => $stats['equipe2_id']]);
+$joueursEquipe2 = $stmtJoueurs2->fetchAll(PDO::FETCH_ASSOC);
+
+
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Résultats Football</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Terrain de Football avec Joueurs</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        .formation-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .field {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: repeating-linear-gradient(
+                90deg,
+                #0a8020,
+                #0a8020 40px,
+                #0e9026 40px,
+                #0e9026 80px
+            );
+            border: 5px solid white;
+            overflow: hidden;
+        }
+
+        /* Lignes blanches du terrain */
+        .field-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        /* Ligne centrale verticale */
+        .center-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: white;
+        }
+
+        /* Cercle central */
+        .center-circle {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 150px;
+            height: 150px;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Point central */
+        .center-dot {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Surfaces de réparation (gauche) */
+        .penalty-area-left {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 180px;
+            height: 440px;
+            border: 2px solid white;
+            border-left: none;
+            transform: translateY(-50%);
+        }
+
+        /* Surfaces de réparation (droite) */
+        .penalty-area-right {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            width: 180px;
+            height: 440px;
+            border: 2px solid white;
+            border-right: none;
+            transform: translateY(-50%);
+        }
+
+        /* Surfaces de but (gauche) */
+        .goal-area-left {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 60px;
+            height: 220px;
+            border: 2px solid white;
+            border-left: none;
+            transform: translateY(-50%);
+        }
+
+        /* Surfaces de but (droite) */
+        .goal-area-right {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            width: 60px;
+            height: 220px;
+            border: 2px solid white;
+            border-right: none;
+            transform: translateY(-50%);
+        }
+
+        /* Points de penalty */
+        .penalty-spot-left {
+            position: absolute;
+            left: 120px;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+
+        .penalty-spot-right {
+            position: absolute;
+            right: 120px;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Arcs de cercle de penalty */
+        .penalty-arc-left {
+            position: absolute;
+            left: 180px;
+            top: 50%;
+            width: 80px;
+            height: 80px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-left: none;
+            clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
+            transform: translateY(-50%);
+        }
+
+        .penalty-arc-right {
+            position: absolute;
+            right: 180px;
+            top: 50%;
+            width: 80px;
+            height: 80px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-right: none;
+            clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
+            transform: translateY(-50%);
+        }
+
+        /* Coins */
+        .corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        .corner-top-left {
+            top: 0;
+            left: 0;
+            border-bottom-right-radius: 0;
+            border-top: none;
+            border-left: none;
+        }
+
+        .corner-top-right {
+            top: 0;
+            right: 0;
+            border-bottom-left-radius: 0;
+            border-top: none;
+            border-right: none;
+        }
+
+        .corner-bottom-left {
+            bottom: 0;
+            left: 0;
+            border-top-right-radius: 0;
+            border-bottom: none;
+            border-left: none;
+        }
+
+        .corner-bottom-right {
+            bottom: 0;
+            right: 0;
+            border-top-left-radius: 0;
+            border-bottom: none;
+            border-right: none;
+        }
+
+        /* Style pour les joueurs */
+        .player {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 70px;
+        }
+
+        .player-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .player-icon img {
+            width: 80%;
+            height: auto;
+        }
+
+        .player-name {
+            color: white;
+            font-size: 10px;
+            text-shadow: 1px 1px 1px #000;
+            margin-top: 4px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-note {
+            background-color: #ffcc00;
+            color: #000;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            margin: 4px auto 0;
+        }
+    </style>
 </head>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    margin: 0;
-    padding: 20px;
-}
-
-.informations {
-    width: 30%;
-    margin: auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.navigation {
-    display: flex;
-    justify-content: space-between;
-}
-
-button {
-    padding: 10px;
-    border: none;
-    background: #007bff;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.match-results ul {
-    list-style: none;
-    padding: 0;
-}
-
-.match-results li {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-.result {
-    font-weight: bold;
-    padding: 5px;
-    border-radius: 5px;
-}
-
-.result.win { background: green; color: white; }
-.result.draw { background: gray; color: white; }
-.result.lose { background: red; color: white; }
-
-.match-info {
-    text-align: center;
-}
-
-.match-details {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
-
-.match-details img {
-    width: 40px;
-    height: 40px;
-}
-
-.more-info {
-    margin-top: 10px;
-    display: block;
-    width: 100%;
-}
-
-.ranking {
-    margin-top: 20px;
-}
-
-.ranking table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.ranking th, .ranking td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-.form span {
-    padding: 5px;
-    margin: 2px;
-    border-radius: 5px;
-    display: inline-block;
-}
-
-.win { background: green; color: white; }
-.draw { background: gray; color: white; }
-.lose { background: red; color: white; }
-</style>
 <body>
-<div class="informations">
-    <div class="navigation">
-        <button class="prev">◀ PRÉCÉDENT</button>
-        <button class="next">SUIVANT ▶</button>
-    </div>
-    <section class="match-results">
-        <h3>Botola Pro League 1</h3>
-        <ul>
-            <?php foreach ($matchs as $match): ?>
-                <li class="match-item">
-                    <span class="date"><?php echo date('d/m/Y', strtotime($match['date'])); ?></span>
-                    <span class="team"><?php echo $match['equipe1_nom']; ?></span>
-                    <span class="score"><?php echo $match['score_equipe1']; ?></span> -
-                    <span class="score"><?php echo $match['score_equipe2']; ?></span>
-                    <span class="team"><?php echo $match['equipe2_nom']; ?></span>
-                    <span class="result <?php echo getMatchResultClass($match['score_equipe1'], $match['score_equipe2'], 1); ?>">
-                        <?php echo getMatchResult($match['score_equipe1'], $match['score_equipe2']); ?>
-                    </span>
-                </li>
+    <section>
+    <div class="formation-container">
+        <div class="field">
+            <!-- Lignes du terrain -->
+            <div class="field-lines">
+                <div class="center-line"></div>
+                <div class="center-circle"></div>
+                <div class="center-dot"></div>
+
+                <div class="penalty-area-left"></div>
+                <div class="penalty-area-right"></div>
+
+                <div class="goal-area-left"></div>
+                <div class="goal-area-right"></div>
+
+                <div class="penalty-spot-left"></div>
+                <div class="penalty-spot-right"></div>
+
+                <div class="penalty-arc-left"></div>
+                <div class="penalty-arc-right"></div>
+
+                <div class="corner corner-top-left"></div>
+                <div class="corner corner-top-right"></div>
+                <div class="corner corner-bottom-left"></div>
+                <div class="corner corner-bottom-right"></div>
+            </div>
+
+            <?php
+            // Positions pour équipe domicile (gauche)
+           // Position équipe domicile (gauche)// Équipe domicile (gauche) - 1-4-3-3
+$positionsDomicile = [
+    0 => ['top' => '10%', 'left' => '15%'], // LB
+
+    // Défenseurs (4)
+    10 => ['top' => '50%', 'left' => '5%'],   // GK (10=>1)
+    2 => ['top' => '80%', 'left' => '15%'],  // Défenseur central gauche
+    3 => ['top' => '70%', 'left' => '25%'],  // Défenseur central droit
+    4 => ['top' => '75%', 'left' => '40%'],  // Latéral droit
+
+    // Milieux (3)
+    5 => ['top' => '55%', 'left' => '15%'], // Milieu défensif
+    6 => ['top' => '50%', 'left' => '25%'], // Milieu central
+    7 => ['top' => '55%', 'left' => '35%'], // Milieu offensif
+
+    // Attaquants (3)
+    8 => ['top' => '35%', 'left' => '15%'], // Ailier gauche
+    9 => ['top' => '30%', 'left' => '25%'], // Avant-centre
+    1 => ['top' => '34%', 'left' => '40%'], // Ailier droit
+];
+
+// Équipe extérieur (droite) - 1-4-3-3
+$positionsExterieur = [
+    0 => ['top' => '90%', 'left' => '85%'], // Gardien
+
+    // Défenseurs (4)
+    1 => ['top' => '75%', 'left' => '60%'], // Latéral gauche
+    2 => ['top' => '70%', 'left' => '75%'], // Défenseur central gauche
+    3 => ['top' => '70%', 'left' => '85%'], // Défenseur central droit
+    4 => ['top' => '55%', 'left' => '95%'], // Latéral droit
+
+    // Milieux (3)
+    5 => ['top' => '55%', 'left' => '65%'], // Milieu défensif
+    6 => ['top' => '50%', 'left' => '75%'], // Milieu central
+    7 => ['top' => '55%', 'left' => '85%'], // Milieu offensif
+    // Attaquants (3)
+    8 => ['top' => '35%', 'left' => '60%'], // Ailier gauche
+    9 => ['top' => '30%', 'left' => '75%'], // Avant-centre
+    10 => ['top' => '30%', 'left' => '85%'], // Ailier droit
+];
+
+
+
+            // Équipe domicile
+            foreach ($stats_joueurs_domicile as $index => $joueur):
+                $pos = $positionsDomicile[$index];
+            ?>
+                <div class="player" style="top: <?= $pos['top'] ?>; left: <?= $pos['left'] ?>;">
+                    <div class="player-icon">
+                        <img src="../assets/images/football-player.png" alt="<?= htmlspecialchars($joueur['nom']) ?>">
+                    </div>
+                    <div class="player-name"><?= htmlspecialchars($joueur['nom']) ?></div>
+                    <div class="player-note"><?= $joueur['note_match'] ?></div>
+                </div>
             <?php endforeach; ?>
-        </ul>
-    </section>
-    <section class="match-info">
-        <h3>Next Match</h3>
-        <div class="match-details">
-            <img src="assets/images/raja.jpg" alt="Raja">
-            <span class="time">16:00</span>
-            <img src="assets/images/fus.jpg" alt="fus">
+
+            <!-- Équipe extérieur -->
+            <?php foreach ($stats_joueurs_exterieur as $index => $joueur):
+                $pos = $positionsExterieur[$index];
+            ?>
+                <div class="player" style="top: <?= $pos['top'] ?>; left: <?= $pos['left'] ?>;">
+                    <div class="player-icon">
+                        <img src="../assets/images/football-player.png" alt="<?= htmlspecialchars($joueur['nom']) ?>">
+                    </div>
+                    <div class="player-name"><?= htmlspecialchars($joueur['nom']) ?></div>
+                    <div class="player-note"><?= $joueur['note_match'] ?></div>
+                </div>
+            <?php endforeach; ?>
         </div>
-        <button class="more-info">VOIR PLUS</button>
-        <div class="ranking">
-            <h4>Classement</h4>
-            <table>
-                <tr>
-                    <th>#</th>
-                    <th>Équipe</th>
-                    <th>Récents</th>
-                    <th>Pts</th>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td><img src="assets/images/raja.jpg" alt="RAJA"> RAJA AC</td>
-                    <td class="form"><span class="win">V</span><span class="win">V</span><span class="draw">N</span><span class="win">V</span></td>
-                    <td>8</td>
-                </tr>
-                <tr>
-                    <td>6</td>
-                    <td><img src="assets/images/fus.jpg" alt="Fus"> FUS</td>
-                    <td class="form"><span class="lose">D</span><span class="lose">D</span><span class="lose">D</span><span class="lose">D</span></td>
-                    <td>0</td>
-                </tr>
-            </table>
-        </div>
+    </div>
     </section>
-</div>
 </body>
 </html>
-<script>document.addEventListener("DOMContentLoaded", function() {
-    const prevBtn = document.querySelector(".prev");
-    const nextBtn = document.querySelector(".next");
-    const matchList = document.querySelector(".match-results ul");
-
-    let index = 0;
-    const matches = matchList.children;
-    const matchesPerPage = 3;
-
-    function showMatches() {
-        for (let i = 0; i < matches.length; i++) {
-            matches[i].style.display = i >= index && i < index + matchesPerPage ? "flex" : "none";
-        }
-    }
-
-    prevBtn.addEventListener("click", function() {
-        if (index > 0) {
-            index -= matchesPerPage;
-            showMatches();
-        }
-    });
-
-    nextBtn.addEventListener("click", function() {
-        if (index + matchesPerPage < matches.length) {
-            index += matchesPerPage;
-            showMatches();
-        }
-    });
-
-    showMatches();
-});
-</script>
